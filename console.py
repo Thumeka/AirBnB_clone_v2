@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 """ Console Module """
 import cmd
+import json
+from shlex import split as our_split
 import sys
+import models
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -73,7 +76,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] is '{' and pline[-1] is '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -114,17 +117,36 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
-        if not args:
+        """Creats object given parameters: Our Code
+        Syntax: create <Class name> <param 1> <param 2> <param 3>...
+        Param syntax: <key name>=<value>
+        """
+        args = our_split(arg)  # ex. split but ignore double quotes
+        if args is None or len(args) == 0:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+        elif args[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
+        else:
+            new_instance = HBNBCommand.classes[args[0]]()
+            for i in args[1:]:
+                k_Value = i.split('=')
+                # print(k_Value)
+                item = iter(k_Value)
+                k_Value_dict = dict(zip(item, item))
+                for key, value in k_Value_dict.items():
+                    if '"' in value:
+                        value = value[1:-1]
+                    if '_' in value:
+                        value = value.replace('_', ' ')
+                    elif key in HBNBCommand.types:
+                        value = HBNBCommand.types[key](value)  # typecasting
+                    k_Value_dict[key] = value
+                # print (k_Value_dict)
+                new_instance.__dict__.update(k_Value_dict)
         print(new_instance.id)
-        storage.save()
+        new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -319,6 +341,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
