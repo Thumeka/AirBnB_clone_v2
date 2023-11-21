@@ -3,11 +3,13 @@
 from os import getenv
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
-import models
 from models.state import State
 from models.city import City
 from models.user import User
-from models.base_model import Base
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+from models.base_model import BaseModel, Base
 
 
 class DBStorage:
@@ -42,7 +44,9 @@ class DBStorage:
         Returns dictionary with objects
         """
         if cls:
-            objs = self.__session.query(cls)
+            if type(cls) == str:
+                cls = eval(cls)
+            objs = self.__session.query(cls).all()
         else:
             objs = self.__session.query(State).all()
             objs += self.__session.query(City).all()
