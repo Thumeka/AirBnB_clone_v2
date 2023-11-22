@@ -142,8 +142,9 @@ class HBNBCommand(cmd.Cmd):
                         value = value.replace('_', ' ')
                     elif key in HBNBCommand.types:
                         value = HBNBCommand.types[key](value)  # typecasting
+                        k_Value_dict[key] = value
                 # print (k_Value_dict)
-                setattr(new_instance, key, value)
+                new_instance.__dict__.update(k_Value_dict)
         print(new_instance.id)
         new_instance.save()
 
