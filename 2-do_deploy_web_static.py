@@ -32,5 +32,9 @@ def do_deploy(archive_path):
         run("rm -rf {}".format(symlink))
         run("ln -s {} {}".format(path_no_ext, symlink))
         return True
-    except:
+    except FileNotFoundError:
+        print(f"Error: Archive file not found at {archive_path}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
         return False
